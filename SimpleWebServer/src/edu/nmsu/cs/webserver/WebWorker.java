@@ -22,18 +22,26 @@ package edu.nmsu.cs.webserver;
  **/
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Scanner;
 import java.util.TimeZone;
 
 public class WebWorker implements Runnable
 {
 
 	private Socket socket;
+	private FileInputStream in;
+	private Boolean isRoot = false;
 
 	/**
 	 * Constructor: must have a valid open socket
@@ -55,9 +63,15 @@ public class WebWorker implements Runnable
 		{
 			InputStream is = socket.getInputStream();
 			OutputStream os = socket.getOutputStream();
-			readHTTPRequest(is);
+			String filename = readHTTPRequest(is);
+			File file = null;
+			if(filename != null) 
+			{
+				file = new File("C:\\Users\\nivek\\OneDrive\\Desktop\\repository\\Programs\\SimpleWebServer" + filename);
+			}
+			//readHTTPRequest(is);
 			writeHTTPHeader(os, "text/html");
-			writeContent(os);
+			writeContent(os, file);
 			os.flush();
 			socket.close();
 		}
@@ -71,11 +85,13 @@ public class WebWorker implements Runnable
 
 	/**
 	 * Read the HTTP request header.
+	 * @return 
 	 **/
-	private void readHTTPRequest(InputStream is)
+	private String readHTTPRequest(InputStream is)
 	{
 		String line;
 		BufferedReader r = new BufferedReader(new InputStreamReader(is));
+		String path = null;
 		while (true)
 		{
 			try
@@ -84,6 +100,20 @@ public class WebWorker implements Runnable
 					Thread.sleep(1);
 				line = r.readLine();
 				System.err.println("Request line: (" + line + ")");
+				if(line.startsWith("GET")) 
+				{
+					path = line;
+					path = path.replaceFirst("GET ", "");
+					path = path.replaceFirst("HTTP.1.1", "");
+					System.err.println("The value of your line is: " + path);					
+					/*
+					 * try { in = new FileInputStream(path);
+					 * 
+					 * } catch (Exception fileNotFound) { System.out.println("This is not the way "
+					 * + path); }
+					 */
+				}
+				
 				if (line.length() == 0)
 					break;
 			}
@@ -93,8 +123,8 @@ public class WebWorker implements Runnable
 				break;
 			}
 		}
-		return;
-	}
+		return path;
+}
 
 	/**
 	 * Write the HTTP header lines to the client network connection.
@@ -123,6 +153,8 @@ public class WebWorker implements Runnable
 		return;
 	}
 
+
+	
 	/**
 	 * Write the data content to the client network connection. This MUST be done after the HTTP
 	 * header has been written out.
@@ -130,11 +162,58 @@ public class WebWorker implements Runnable
 	 * @param os
 	 *          is the OutputStream object to write to
 	 **/
-	private void writeContent(OutputStream os) throws Exception
+	private void writeContent(OutputStream os, File file) throws Exception
 	{
-		os.write("<html><head></head><body>\n".getBytes());
-		os.write("<h3>My web server works!</h3>\n".getBytes());
-		os.write("</body></html>\n".getBytes());
-	}
+		Date date = new Date();
+		String servername = "Kevin's Server";
+		String line = "";
+		String checker = file.getPath();
+		int has = checker.indexOf("html");
+		System.err.println(checker);
+		
+		  if(has == -1)
+		  { 
+			  os.write("<html><head></head><body>\n".getBytes());
+			  os.write("<h3>Welcome to the Server</h3>\n".getBytes());
+			  os.write("</body>My name is SkyNet</html>\n".getBytes());
+		  }
+		 
+		  else {
+		 
+			  if(file.exists())
+			  {
+				// FileReader reads text files in the default encoding.
+				FileReader fileReader = new FileReader(file.getPath());
+				// Always wrap FileReader in BufferedReader.
+				BufferedReader bufferedReader = new BufferedReader(fileReader);
 
+				while((line = bufferedReader.readLine()) != null) 
+				{
+					if(line.contains("<cs371date>")) 
+					{
+						line = line.replace("<cs371date", date.toString());
+					}
+					if(line.contains("<cs371server>"))
+					{
+						line = line.replace("<cs371server>", servername);
+					}
+					os.write(line.getBytes());
+					os.write("\n".getBytes());
+				}  
+
+				bufferedReader.close(); // Always close files.   
+				//os.write("<html><head></head><body>\n".getBytes());
+				//os.write(new String("<h1>localfile: " + file.getAbsolutePath() + "</h1>").getBytes());
+				//os.write("<h3>My web server works!</h3>\n".getBytes());
+				//os.write("</body></html>\n".getBytes());
+			}
+			else
+			{
+				os.write("<html><head></head><body>\n".getBytes());
+				os.write("<h3>404: Not found.</h3>\n".getBytes());
+				os.write("</body>SkyNet</html>\n".getBytes());
+			}
+		}
+	}
+	
 } // end class
