@@ -143,10 +143,10 @@ public class WebWorker implements Runnable
 		int gif = checker.indexOf("gif");
 		int jpeg = checker.indexOf("jpg");
 		int png = checker.indexOf("png");
-		if(file.exists())
+		if(file.exists())		//checks if the file exists to then determine the content type
 		{
 			
-			if(png != -1)
+			if(png != -1)		//if it exists it checks these image types
 			{
 				contentType = "image/png";
 			}
@@ -158,7 +158,7 @@ public class WebWorker implements Runnable
 			{
 				contentType = "image/jpg";
 			}
-			else 
+			else 				//if not then it sets it as an html
 			{
 				contentType = "text/html";
 			}
@@ -176,7 +176,7 @@ public class WebWorker implements Runnable
 		// os.write("Content-Length: 438\n".getBytes());
 		os.write("Connection: close\n".getBytes());
 		os.write("Content-Type: ".getBytes());
-		os.write(contentType.getBytes());
+		os.write(contentType.getBytes());		//gives it the content type
 		os.write("\n\n".getBytes()); // HTTP header ends with 2 newlines
 		return;
 	}
@@ -203,17 +203,17 @@ public class WebWorker implements Runnable
 		System.out.println(checker);
 		System.out.println(checker.length());
 		
-		  if(checker.length() - 69 <= 1)
-		  { 
+		  if(checker.length() - 69 <= 1)		//69 equals to the number of characters in the path until the SimpleWebserver directory 
+		  { 									
 			  os.write("<html><head></head><body>\n".getBytes());
 			  os.write("<h3>Welcome to the Server</h3>\n".getBytes());
 			  os.write("</body>My name is SkyNet</html>\n".getBytes());
 		  }
 		 
-		  else if(file.exists())
+		  else if(file.exists())		//if the file is found then
 		  {
 			  System.out.println("file exist" + file);
-				  if(has != -1)
+				  if(has != -1)				//prints the html
 				  {
 					  // FileReader reads text files in the default encoding.
 					  FileReader fileReader = new FileReader(file.getPath());
@@ -237,18 +237,18 @@ public class WebWorker implements Runnable
 					  bufferedReader.close();
 				  }
 				  
-				  if(png != -1 || gif != -1 || jpeg != -1)
+				  if(png != -1 || gif != -1 || jpeg != -1)		//prints the image 
 				  {
 					  Boolean gorge = file.exists();
 					  System.out.println(gorge);
-					  BufferedInputStream reader;
+					  BufferedInputStream reader;			//the buffer reader does not work for images so we have to use inputstream
 					  try 
 					  {
-						  reader = new BufferedInputStream(new FileInputStream(file.getAbsolutePath()));
+						  reader = new BufferedInputStream(new FileInputStream(file.getAbsolutePath()));		//tells it where to get the bytes of the image
 						  int info = reader.read();
 						  while (info != -1)
 						  {
-							  os.write(info);
+							  os.write(info);		//writes the image
 							  info = reader.read();
 						  }
 						  
@@ -260,9 +260,9 @@ public class WebWorker implements Runnable
 					  }  
 				  }
 		  }
-		  	else
-			{
-				os.write("<html><head></head><body>\n".getBytes());
+		  	else			//in case that the file or directory does not exist
+			{													
+				os.write("<html><head></head><body>\n".getBytes());	
 				os.write("<h3>404: Not found.</h3>\n".getBytes());
 				os.write("</body>SkyNet</html>\n".getBytes());
 			}
