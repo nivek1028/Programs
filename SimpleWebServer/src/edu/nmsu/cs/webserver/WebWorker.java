@@ -1,5 +1,7 @@
 package edu.nmsu.cs.webserver;
 
+import java.io.BufferedInputStream;
+
 /**
  * Web worker: an object of this class executes in its own new thread to receive and respond to a
  * single HTTP request. After the constructor the object executes on its "run" method, and leaves
@@ -70,7 +72,7 @@ public class WebWorker implements Runnable
 				file = new File("C:\\Users\\nivek\\OneDrive\\Desktop\\repository\\Programs\\SimpleWebServer" + filename);
 			}
 			//readHTTPRequest(is);
-			writeHTTPHeader(os, "text/html");
+			writeHTTPHeader(os, "text/html", file);
 			writeContent(os, file);
 			os.flush();
 			socket.close();
@@ -134,8 +136,34 @@ public class WebWorker implements Runnable
 	 * @param contentType
 	 *          is the string MIME content type (e.g. "text/html")
 	 **/
-	private void writeHTTPHeader(OutputStream os, String contentType) throws Exception
+	private void writeHTTPHeader(OutputStream os, String contentType, File file) throws Exception
 	{
+		String checker = file.getPath();
+		int has = checker.indexOf("html");
+		int gif = checker.indexOf("gif");
+		int jpeg = checker.indexOf("jpg");
+		int png = checker.indexOf("png");
+		if(file.exists())
+		{
+			
+			if(png != -1)
+			{
+				contentType = "image/png";
+			}
+			else if(gif != -1)
+			{
+				contentType = "image/gif";
+			}
+			else if (jpeg != -1)
+			{
+				contentType = "image/jpg";
+			}
+			else 
+			{
+				contentType = "text/html";
+			}
+		}
+		System.err.println(checker);
 		Date d = new Date();
 		DateFormat df = DateFormat.getDateTimeInstance();
 		df.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -168,52 +196,76 @@ public class WebWorker implements Runnable
 		String servername = "Kevin's Server";
 		String line = "";
 		String checker = file.getPath();
-		int has = checker.indexOf("html");
-		System.err.println(checker);
+		int has = checker.indexOf(".html");
+		int gif = checker.indexOf(".gif");
+		int jpeg = checker.indexOf(".jpg");
+		int png = checker.indexOf(".png");
+		System.out.println(checker);
+		System.out.println(checker.length());
 		
-		  if(has == -1)
+		  if(checker.length() - 69 <= 1)
 		  { 
 			  os.write("<html><head></head><body>\n".getBytes());
 			  os.write("<h3>Welcome to the Server</h3>\n".getBytes());
 			  os.write("</body>My name is SkyNet</html>\n".getBytes());
 		  }
 		 
-		  else {
-		 
-			  if(file.exists())
-			  {
-				// FileReader reads text files in the default encoding.
-				FileReader fileReader = new FileReader(file.getPath());
-				// Always wrap FileReader in BufferedReader.
-				BufferedReader bufferedReader = new BufferedReader(fileReader);
+		  else if(file.exists())
+		  {
+			  System.out.println("file exist" + file);
+				  if(has != -1)
+				  {
+					  // FileReader reads text files in the default encoding.
+					  FileReader fileReader = new FileReader(file.getPath());
+					  // Always wrap FileReader in BufferedReader.
+					  BufferedReader bufferedReader = new BufferedReader(fileReader);
 
-				while((line = bufferedReader.readLine()) != null) 
-				{
-					if(line.contains("<cs371date>")) 
-					{
-						line = line.replace("<cs371date", date.toString());
-					}
-					if(line.contains("<cs371server>"))
-					{
-						line = line.replace("<cs371server>", servername);
-					}
-					os.write(line.getBytes());
-					os.write("\n".getBytes());
-				}  
+					  while((line = bufferedReader.readLine()) != null) 
+					  {
+						  if(line.contains("<cs371date>")) 
+						  {
+							  line = line.replace("<cs371date", date.toString());
+						  }
+						  if(line.contains("<cs371server>"))
+						  {
+							  line = line.replace("<cs371server>", servername);
+						  }
+						  os.write(line.getBytes());
+						  os.write("\n".getBytes());
+					  }  
 
-				bufferedReader.close(); // Always close files.   
-				//os.write("<html><head></head><body>\n".getBytes());
-				//os.write(new String("<h1>localfile: " + file.getAbsolutePath() + "</h1>").getBytes());
-				//os.write("<h3>My web server works!</h3>\n".getBytes());
-				//os.write("</body></html>\n".getBytes());
-			}
-			else
+					  bufferedReader.close();
+				  }
+				  
+				  if(png != -1 || gif != -1 || jpeg != -1)
+				  {
+					  Boolean gorge = file.exists();
+					  System.out.println(gorge);
+					  BufferedInputStream reader;
+					  try 
+					  {
+						  reader = new BufferedInputStream(new FileInputStream(file.getAbsolutePath()));
+						  int info = reader.read();
+						  while (info != -1)
+						  {
+							  os.write(info);
+							  info = reader.read();
+						  }
+						  
+						  reader.close();
+					  }
+					  catch(FileNotFoundException e)
+					  {
+						  e.printStackTrace();
+					  }  
+				  }
+		  }
+		  	else
 			{
 				os.write("<html><head></head><body>\n".getBytes());
 				os.write("<h3>404: Not found.</h3>\n".getBytes());
 				os.write("</body>SkyNet</html>\n".getBytes());
 			}
 		}
-	}
 	
 } // end class
