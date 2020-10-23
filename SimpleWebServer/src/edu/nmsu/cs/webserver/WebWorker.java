@@ -67,9 +67,10 @@ public class WebWorker implements Runnable
 			OutputStream os = socket.getOutputStream();
 			String filename = readHTTPRequest(is);
 			File file = null;
+			String currentdir = System.getProperty("user.dir");
 			if(filename != null) 
 			{
-				file = new File("C:\\Users\\nivek\\OneDrive\\Desktop\\repository\\Programs\\SimpleWebServer" + filename);
+				file = new File(currentdir + filename);
 			}
 			//readHTTPRequest(is);
 			writeHTTPHeader(os, "text/html", file);
@@ -139,6 +140,11 @@ public class WebWorker implements Runnable
 	private void writeHTTPHeader(OutputStream os, String contentType, File file) throws Exception
 	{
 		String checker = file.getPath();
+		String current = System.getProperty("user.dir");
+		//System.err.println("111111111111111" + current);
+		//System.out.println("21222121 " + current + checker);
+		//checker = current + checker;
+		//System.out.println("111111111111111" + checker);
 		int has = checker.indexOf("html");
 		int gif = checker.indexOf("gif");
 		int jpeg = checker.indexOf("jpg");
@@ -200,10 +206,15 @@ public class WebWorker implements Runnable
 		int gif = checker.indexOf(".gif");
 		int jpeg = checker.indexOf(".jpg");
 		int png = checker.indexOf(".png");
-		System.out.println(checker);
 		System.out.println(checker.length());
+		String currentdir = System.getProperty("user.dir");
+		currentdir = currentdir + "\\";
+		//System.out.println("111111" + checker);
+		//System.out.println("222222" + currentdir);
+		//System.out.println(currentdir.equals(checker));
+
 		
-		  if(checker.length() - 69 <= 1)		//69 equals to the number of characters in the path until the SimpleWebserver directory 
+		  if(checker.length() <= (currentdir.length() + 1))		//69 equals to the number of characters in the path until the SimpleWebserver directory 
 		  { 									
 			  os.write("<html><head></head><body>\n".getBytes());
 			  os.write("<h3>Welcome to the Server</h3>\n".getBytes());
@@ -224,7 +235,7 @@ public class WebWorker implements Runnable
 					  {
 						  if(line.contains("<cs371date>")) 
 						  {
-							  line = line.replace("<cs371date", date.toString());
+							  line = line.replace("<cs371date>", date.toString());
 						  }
 						  if(line.contains("<cs371server>"))
 						  {
