@@ -68,6 +68,8 @@ public class WebWorker implements Runnable
 			String filename = readHTTPRequest(is);
 			File file = null;
 			String currentdir = System.getProperty("user.dir");
+			//System.out.println("dins " + (currentdir.indexOf("Server") + 5));
+			currentdir = currentdir.substring(0, (currentdir.indexOf("Server")+6));
 			if(filename != null) 
 			{
 				file = new File(currentdir + filename);
